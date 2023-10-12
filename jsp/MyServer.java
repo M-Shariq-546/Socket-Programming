@@ -1,20 +1,31 @@
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 
-public class MyClient {
+public class MyServer {
     public static void main(String[] args) {
-        String serverAddress = "localhost";
-        int serverPort = 1234;
+        int port = 1234;
 
-        try (Socket socket = new Socket(serverAddress, serverPort);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server is running on port " + port);
 
-            String clientMessage = "Hello My name is John"; // You can replace "John" with your name
-            out.println(clientMessage);
+            while (true) {
+                try (Socket clientSocket = serverSocket.accept();
+                     BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            String serverResponse = in.readLine();
-            System.out.println("Server: " + serverResponse);
+                    String clientMessage = in.readLine();
+                    if (clientMessage != null) {
+                        System.out.println("Client: " + clientMessage);
+
+                        // Process the client's message and prepare a response
+                        String response = "Walikum Salam " + clientMessage.substring(clientMessage.lastIndexOf("is") + 3);
+
+                        // Send the response to the client
+                        out.println(response);
+                    }
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
